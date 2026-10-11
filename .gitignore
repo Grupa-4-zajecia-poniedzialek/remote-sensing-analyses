@@ -104,10 +104,10 @@ venv.bak/
 .mypy_cache/
 
 # ignore raster files
-*.tif
-*.tiff
-*.TIF
-*.TIFF
+# *.tif
+# *.tiff
+# *.TIF
+# *.TIFF
 
 # IDEs and editors
 .idea/

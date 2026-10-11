@@ -279,6 +279,7 @@ def write_annual_index(output_dir: Path, summaries: list[dict]) -> dict:
         scenes=[{
             'year':summary['year'],'date':summary['date'],
             'base':base_pattern.format(year=summary['year']),
+            'url':base_pattern.format(year=summary['year'])+'/index.html',
             'bounds':summary['bounds'],'ramps':summary['ramps'],
             'minzoom':summary['minzoom'],'maxzoom':summary['maxzoom'],
         } for summary in summaries]

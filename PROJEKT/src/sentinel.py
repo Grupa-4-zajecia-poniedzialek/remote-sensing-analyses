@@ -273,6 +273,7 @@ def write_annual_index(output_dir: Path, summaries: list[dict]) -> dict:
     template=(Path(__file__).parent/'map_template.html').read_text(encoding='utf-8')
     for selected_year, page_dir, base_pattern in [
         (None, site, '../{year}/site'),
+        (None, output_dir, './{year}/site'),
         *((summary['year'], output_dir/summary['year']/'site', '../../{year}/site')
           for summary in summaries),
     ]:
@@ -319,6 +320,6 @@ def main():
         del scene, indices
     result=write_annual_index(args.output,results)
     print(json.dumps(result,ensure_ascii=False,indent=2))
-    print('Podgląd: python -m http.server 8000 --bind 127.0.0.1 --directory '+str(args.output/'site'))
+    print('Podgląd wdrożeniowy: python -m http.server 8000 --bind 127.0.0.1 --directory '+str(args.output))
 
 if __name__=='__main__': main()

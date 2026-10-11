@@ -239,23 +239,25 @@ const dateSelect=document.querySelector('#date');
 for(const scene of cfg.scenes){const option=document.createElement('option');option.value=scene.year;option.textContent=scene.date;dateSelect.append(option);}
 let activeScene=cfg.scenes.find(scene=>scene.year===cfg.selectedYear)||cfg.scenes[0];
 dateSelect.value=activeScene.year;
+document.querySelector('#scene-date').textContent=activeScene.date;
 const map=L.map('map',{minZoom:activeScene.minzoom,maxZoom:17}).fitBounds(activeScene.bounds);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 const text={NDVI:'NDVI = (B08 − B04) / (B08 + B04). Wysokie wartości często odpowiadają roślinności.',NDBI:'NDBI = (B11 − B08) / (B11 + B08). Dodatni wynik może wskazywać zabudowę lub odsłoniętą glebę.',MNDWI:'MNDWI = (B03 − B11) / (B03 + B11). Wskaźnik wspiera rozpoznawanie wód powierzchniowych.',RGB:'Kompozycja B04/B03/B02. Kontrast: percentyle 2–98 osobno dla kanałów. Kolory służą interpretacji obrazu.'};
-let overlay,boundary,boundaryRequest=0;
+let overlay;
 function change(){const name=document.querySelector('#layer').value;if(overlay)map.removeLayer(overlay);
 overlay=L.tileLayer(activeScene.base+'/tiles/'+name+'/{z}/{x}/{y}.png',{tileSize:256,tms:false,minZoom:activeScene.minzoom,maxNativeZoom:activeScene.maxzoom,maxZoom:17,bounds:activeScene.bounds,noWrap:true,opacity:Number(document.querySelector('#opacity').value),attribution:'Sentinel-2 / Copernicus'}).addTo(map);
 document.querySelector('#explain').textContent=text[name];document.querySelector('#legend').hidden=name==='RGB';
 if(name!=='RGB')document.querySelector('#ramp').style.background='linear-gradient(to right,'+activeScene.ramps[name].join(',')+')';
 overlay.on('load',()=>document.querySelector('#state-text').textContent='Warstwa '+name+' wczytana.');
 overlay.on('tileerror',()=>document.querySelector('#state-text').textContent='Brak kafelka w katalogu tiles.');}
-function changeDate(){activeScene=cfg.scenes.find(scene=>scene.year===dateSelect.value);document.querySelector('#scene-date').textContent=activeScene.date;map.setMinZoom(activeScene.minzoom);map.fitBounds(activeScene.bounds);if(boundary)map.removeLayer(boundary);change();const request=++boundaryRequest;
-fetch(activeScene.base+'/aoi.geojson').then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(g=>{if(request===boundaryRequest)boundary=L.geoJSON(g,{style:{color:'#2b6cb0',weight:2,fill:false,dashArray:'5, 5'},interactive:false}).addTo(map)}).catch(()=>{if(request===boundaryRequest)document.querySelector('#state-text').textContent='Granica wymaga serwera HTTP.'});}
+function changeDate(){const scene=cfg.scenes.find(item=>item.year===dateSelect.value);if(scene&&scene.year!==activeScene.year)window.location.assign(scene.url);}
+function loadBoundary(){fetch(activeScene.base+'/aoi.geojson').then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(g=>L.geoJSON(g,{style:{color:'#2b6cb0',weight:2,fill:false,dashArray:'5, 5'},interactive:false}).addTo(map)).catch(()=>{document.querySelector('#state-text').textContent='Granica wymaga serwera HTTP.'});}
 dateSelect.addEventListener('change',changeDate);
 document.querySelector('#layer').addEventListener('change',change);
 document.querySelector('#opacity').addEventListener('input',e=>overlay.setOpacity(Number(e.target.value)));
 document.querySelector('#reset').addEventListener('click',()=>map.fitBounds(activeScene.bounds));
-changeDate();
+change();
+loadBoundary();
 </script>
 </body>
 </html>
